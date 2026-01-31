@@ -18,7 +18,7 @@ export default function Home() {
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               用 AI 创造
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                {" "}完美内容
+                {/* 完美内容 */}
               </span>
             </h1>
 
@@ -31,16 +31,16 @@ export default function Home() {
             {/* 特性标签 */}
             <div className="flex flex-wrap justify-center gap-4 mb-12">
               <span className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                🚀 多平台支持
+                 多平台支持
               </span>
               <span className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                🎯 精准语气控制
+                 精准语气控制
               </span>
               <span className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                🤖 智能工作流
+                 智能工作流
               </span>
               <span className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                💬 人机协同
+                 人机协同
               </span>
             </div>
 
@@ -95,7 +95,7 @@ export default function Home() {
             {/* 特性卡片 1 */}
             <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🎯</span>
+                <span className="text-2xl"></span>
               </div>
               <h3 className="text-xl font-semibold mb-2">多平台优化</h3>
               <p className="text-gray-600">
@@ -106,7 +106,7 @@ export default function Home() {
             {/* 特性卡片 2 */}
             <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🤖</span>
+                <span className="text-2xl"></span>
               </div>
               <h3 className="text-xl font-semibold mb-2">智能工作流</h3>
               <p className="text-gray-600">
