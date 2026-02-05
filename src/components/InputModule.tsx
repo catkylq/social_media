@@ -139,7 +139,7 @@ export default function InputModule() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* URL 分析结果展示 */}
       <URLAnalysisDisplay
         isAnalyzing={isAnalyzing}
@@ -147,82 +147,38 @@ export default function InputModule() {
         onClose={() => setAnalysisResult(null)}
       />
 
-      {/* 输入方式选择 */}
+      {/* 输入方式选择 - 和平台选择一样的格式 */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           输入方式
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <button
-            onClick={() => setInputMode('text')}
-            className={`p-4 border-2 rounded-lg text-left transition ${
-              inputMode === 'text'
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className={`font-semibold ${inputMode === 'text' ? 'text-blue-900' : 'text-gray-900'}`}>
-              📝 文字描述
-            </div>
-            <div className={`text-sm mt-1 ${inputMode === 'text' ? 'text-blue-700' : 'text-gray-600'}`}>
-              直接输入内容描述
-            </div>
-          </button>
-
-          <button
-            onClick={() => setInputMode('url')}
-            className={`p-4 border-2 rounded-lg text-left transition ${
-              inputMode === 'url'
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className={`font-semibold ${inputMode === 'url' ? 'text-blue-900' : 'text-gray-900'}`}>
-              🔗 网址链接
-            </div>
-            <div className={`text-sm mt-1 ${inputMode === 'url' ? 'text-blue-700' : 'text-gray-600'}`}>
-              从网页提取内容
-            </div>
-          </button>
-
-          <button
-            onClick={() => setInputMode('document')}
-            className={`p-4 border-2 rounded-lg text-left transition ${
-              inputMode === 'document'
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className={`font-semibold ${inputMode === 'document' ? 'text-blue-900' : 'text-gray-900'}`}>
-              📄 文档上传
-            </div>
-            <div className={`text-sm mt-1 ${inputMode === 'document' ? 'text-blue-700' : 'text-gray-600'}`}>
-              上传文档分析
-            </div>
-          </button>
-        </div>
+        <select
+          value={inputMode}
+          onChange={(e) => setInputMode(e.target.value as InputMode)}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="text">📝 文字描述</option>
+          <option value="url">🔗 网址链接</option>
+          <option value="document">📄 文档上传</option>
+        </select>
       </div>
 
       {/* 文字输入模式 */}
       {inputMode === 'text' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             内容描述
           </label>
           <textarea
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            placeholder="请描述您想要创作的内容，例如：为我们的新产品写一篇 LinkedIn 帖子，重点介绍它如何帮助企业节省时间..."
-            className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            placeholder="请描述您想要创作的内容，例如：为我们的新产品写一篇小红书帖子..."
+            className="w-full h-32 px-5 py-3 bg-white border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 resize-none transition-all"
           />
-          <div className="mt-2 flex justify-between items-center">
-            <span className="text-sm text-gray-500">
-              已输入 {textInput.length} 字
-            </span>
+          <div className="mt-2 flex justify-between items-center text-sm">
+            <span className="text-gray-500">已输入 {textInput.length} 字</span>
             {textInput.length > 500 && (
-              <span className="text-sm text-amber-600">
-                ⚠️ 建议不超过 500 字以获得最佳效果
-              </span>
+              <span className="text-amber-600">⚠️ 建议不超过 500 字</span>
             )}
           </div>
         </div>
@@ -278,7 +234,7 @@ export default function InputModule() {
       {/* 文档上传模式 */}
       {inputMode === 'document' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             文档上传
           </label>
           
@@ -286,7 +242,7 @@ export default function InputModule() {
             <div
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition cursor-pointer"
+              className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 hover:bg-blue-50 transition cursor-pointer"
             >
               <input
                 type="file"
@@ -296,50 +252,54 @@ export default function InputModule() {
                 id="file-upload"
               />
               <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="mb-4">
-                  <svg
-                    className="w-16 h-16 mx-auto text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-gray-700">
+                      点击上传或拖拽文件
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      支持 PDF、Word、TXT，最大 10MB
+                    </p>
+                  </div>
                 </div>
-                <p className="text-lg font-medium text-gray-700 mb-2">
-                  点击上传或拖拽文件到此处
-                </p>
-                <p className="text-sm text-gray-500">
-                  支持 PDF、Word、TXT 格式，最大 10MB
-                </p>
               </label>
             </div>
           ) : (
-            <div className="border border-gray-300 rounded-lg p-4">
+            <div className="border border-gray-300 rounded-lg p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-xl">📄</span>
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">📄</span>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
                       {selectedFile.name}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs text-gray-500">
                       {(selectedFile.size / 1024).toFixed(2)} KB
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedFile(null)}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-gray-400 hover:text-red-500 flex-shrink-0 p-1 transition"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>

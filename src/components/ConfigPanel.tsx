@@ -213,24 +213,42 @@ export default function ConfigPanel({ platform, onPlatformChange }: ConfigPanelP
       </div>
 
       {/* 高级选项折叠面板 */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between"
-        >
-          <span className="font-medium text-gray-700">⚙️ 高级选项</span>
-          <svg
-            className={`w-5 h-5 text-gray-500 transition-transform ${
-              showAdvanced ? 'rotate-180' : ''
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+<div className="border border-gray-200 rounded-md overflow-hidden">
+  <button
+    type="button"
+    onClick={() => setShowAdvanced(!showAdvanced)}
+    className="
+      w-full
+      px-3 py-2
+      flex items-center justify-between
+      bg-gray-50 hover:bg-gray-100
+      transition
+    "
+  >
+    {/* 左侧标题 */}
+    <span className="text-sm font-medium text-gray-700">
+      高级选项
+    </span>
 
+    {/* 右侧箭头（防止被拉伸） */}
+    <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+      <svg
+        className={`w-4 h-4 text-gray-500 transition-transform ${
+          showAdvanced ? 'rotate-180' : ''
+        }`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 9l-7 7-7-7"
+        />
+      </svg>
+    </span>
+  </button>
         {showAdvanced && (
           <div className="p-4 space-y-4 bg-white">
             {/* 创意度控制 */}

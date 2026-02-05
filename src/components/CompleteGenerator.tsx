@@ -5,6 +5,8 @@ import InputModule from './InputModule';
 import ConfigPanel from './ConfigPanel';
 import ResultDisplay from './ResultDisplay';
 import WorkflowVisualizer from './WorkflowVisualizer';
+import { useToast } from './ToastNotification';
+import ErrorBoundary from './ErrorBoundary';
 
 type Platform = '小红书' | '抖音' | '微博' | '知乎';
 
@@ -21,48 +23,58 @@ export default function CompleteGenerator() {
   const [results, setResults] = useState<GeneratedContent[]>([]);
   const [showWorkflow, setShowWorkflow] = useState(false);
   const [useAgenticMode, setUseAgenticMode] = useState(false);
+  const { showToast, ToastContainer } = useToast();
 
   // 模拟生成内容
   const handleGenerate = async () => {
-    setIsLoading(true);
-    setShowWorkflow(useAgenticMode);
-    
-    // 滚动到页面顶部，准备显示加载状态
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // 如果使用 Agentic 模式，等待工作流完成
-    if (useAgenticMode) {
-      // 工作流会自动运行，等待约 12.5 秒（5个步骤，每个约2.5秒）
-      await new Promise(resolve => setTimeout(resolve, 13000));
-    } else {
-      // 普通模式，简单延迟
-      await new Promise(resolve => setTimeout(resolve, 2500));
+    try {
+      setIsLoading(true);
+      setShowWorkflow(useAgenticMode);
+      
+      // 滚动到页面顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // 如果使用 Agentic 模式
+      if (useAgenticMode) {
+        await new Promise(resolve => setTimeout(resolve, 13000));
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 2500));
+      }
+      
+      // 生成模拟内容
+      const count = 3;
+      const mockResults: GeneratedContent[] = [];
+      
+      for (let i = 0; i < count; i++) {
+        mockResults.push({
+          id: Date.now() + i,
+          content: generateMockContent(platform, i + 1),
+          platform: platform,
+          createdAt: new Date(),
+        });
+      }
+      
+      setResults(mockResults);
+      setIsLoading(false);
+      setShowWorkflow(false);
+      
+      // 成功提示
+      showToast('🎉 内容生成成功！', 'success');
+      
+      // 滚动到结果区域
+      setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
+      
+    } catch (error) {
+      setIsLoading(false);
+      setShowWorkflow(false);
+      showToast('❌ 生成失败，请重试', 'error');
+      console.error('生成错误:', error);
     }
-    
-    // 根据平台生成不同数量的模拟内容
-    const count = 3;
-    const mockResults: GeneratedContent[] = [];
-    
-    for (let i = 0; i < count; i++) {
-      mockResults.push({
-        id: Date.now() + i,
-        content: generateMockContent(platform, i + 1),
-        platform: platform,
-        createdAt: new Date(),
-      });
-    }
-    
-    setResults(mockResults);
-    setIsLoading(false);
-    setShowWorkflow(false);
-    
-    // 生成完成后滚动到结果区域
-    setTimeout(() => {
-      document.getElementById('results-section')?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }, 100);
   };
 
   // 根据平台生成不同风格的模拟内容
@@ -209,17 +221,18 @@ export default function CompleteGenerator() {
   };
 
   const handleRegenerate = (id: number) => {
-    console.log('重新生成:', id);
-    // TODO: 实现重新生成单个结果的逻辑
+    showToast('🔄 正在重新生成...', 'info');
+    // TODO: 实现重新生成逻辑
   };
 
   const handleEdit = (id: number) => {
-    console.log('编辑:', id);
+    showToast('✏️ 编辑模式已开启', 'info');
     // TODO: 实现编辑功能
   };
 
   return (
-    <>
+    <ErrorBoundary>
+      <ToastContainer />
       {/* 输入和配置区域 */}
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
         <div className="p-8">
@@ -232,19 +245,16 @@ export default function CompleteGenerator() {
             />
 
             {/* Agentic 模式开关 */}
-            <div className="border-t border-gray-200 pt-6">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-lg">🤖</span>
+            <div className="border-t border-gray-200 pt-5">
+              <div className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg border border-gray-300">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white text-sm">🤖</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">
+                    <h4 className="font-medium text-gray-900 text-sm">
                       Agentic 智能工作流
                     </h4>
-                    <p className="text-sm text-gray-600">
-                      多阶段协同生成，可视化展示每个步骤
-                    </p>
                   </div>
                 </div>
                 
@@ -255,24 +265,16 @@ export default function CompleteGenerator() {
                     onChange={(e) => setUseAgenticMode(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600"></div>
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600"></div>
                 </label>
               </div>
-
-              {useAgenticMode && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    ℹ️ 启用后将展示完整的 AI 工作流程，包括需求分析、内容规划、初稿生成、扩展优化、最终润色等 5 个阶段。
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* 生成按钮 */}
             <button 
               onClick={handleGenerate}
               disabled={isLoading}
-              className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? '⏳ 生成中...' : useAgenticMode ? '🤖 启动智能工作流' : '🚀 生成内容'}
             </button>
@@ -301,6 +303,6 @@ export default function CompleteGenerator() {
           />
         </div>
       </div>
-    </>
+    </ErrorBoundary>
   );
 }
