@@ -231,33 +231,48 @@ export default function CompleteGenerator() {
   };
 
   return (
-    <ErrorBoundary>
-      <ToastContainer />
-      {/* 输入和配置区域 */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-        <div className="p-8">
+  <ErrorBoundary>
+    <ToastContainer />
+
+    {/* ================= 一级：Generator 主卡片 ================= */}
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+
+      <div className="p-8 space-y-10">
+
+        {/* ================= 🎯 子卡片一：输入与配置 ================= */}
+        <section className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            🎯 需求输入与配置
+            <span className="text-sm font-normal text-gray-500">
+             （用户控制）
+            </span>
+          </h3>
+
           <div className="space-y-6">
             <InputModule />
-            
-            <ConfigPanel 
+
+            <ConfigPanel
               platform={platform}
               onPlatformChange={setPlatform}
             />
 
             {/* Agentic 模式开关 */}
             <div className="border-t border-gray-200 pt-5">
-              <div className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg border border-gray-300">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="flex items-center justify-between px-4 py-3 bg-white rounded-lg border border-gray-300">
+                <div className="flex items-center space-x-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                     <span className="text-white text-sm">🤖</span>
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 text-sm">
                       Agentic 智能工作流
                     </h4>
+                    <p className="text-xs text-gray-500">
+                      启用多阶段规划与执行
+                    </p>
                   </div>
                 </div>
-                
+
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
@@ -265,44 +280,87 @@ export default function CompleteGenerator() {
                     onChange={(e) => setUseAgenticMode(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600"></div>
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:after:translate-x-full after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600"></div>
                 </label>
               </div>
             </div>
-
-            {/* 生成按钮 */}
-            <button 
-              onClick={handleGenerate}
-              disabled={isLoading}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isLoading ? '⏳ 生成中...' : useAgenticMode ? '🤖 启动智能工作流' : '🚀 生成内容'}
-            </button>
           </div>
-        </div>
+        </section>
 
-        {/* 工作流可视化 */}
+        {/* ================= 🤖 子卡片二：执行控制 ================= */}
+        <section className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            🤖 执行控制
+            <span className="text-sm font-normal text-gray-500">
+             （启动生成）
+            </span>
+          </h3>
+
+          <button
+            onClick={handleGenerate}
+            disabled={isLoading}
+            className="
+              w-full py-3
+              bg-gradient-to-r from-blue-600 to-purple-600
+              text-white font-semibold rounded-lg
+              shadow-lg hover:shadow-xl
+              hover:scale-[1.02]
+              transition-all
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+              disabled:transform-none
+            "
+          >
+            {isLoading
+              ? '⏳ 生成中...'
+              : useAgenticMode
+                ? '🤖 启动智能工作流'
+                : '🚀 生成内容'}
+          </button>
+        </section>
+
+        {/* ================= 🧠 子卡片三：Agent 工作流 ================= */}
         {showWorkflow && (
-          <div className="p-8 pt-0">
-            <WorkflowVisualizer 
+          <section className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+              🧠 Agent 工作流
+              <span className="text-sm font-normal text-gray-500">
+               （自动规划与执行）
+              </span>
+            </h3>
+
+            <WorkflowVisualizer
               isActive={showWorkflow}
               onComplete={() => {
                 console.log('工作流完成');
               }}
             />
-          </div>
+          </section>
         )}
 
-        {/* 结果展示区域 */}
-        <div id="results-section">
-          <ResultDisplay 
+        {/* ================= 📄 子卡片四：生成结果 ================= */}
+        <section
+          id="results-section"
+          className="bg-slate-50 rounded-xl p-6 border border-slate-200"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            📄 生成结果
+            <span className="text-sm font-normal text-gray-500">
+             （AI 输出）
+            </span>
+          </h3>
+
+          <ResultDisplay
             isLoading={isLoading && !showWorkflow}
             results={results}
             onRegenerate={handleRegenerate}
             onEdit={handleEdit}
           />
-        </div>
+        </section>
+
       </div>
-    </ErrorBoundary>
-  );
+    </div>
+  </ErrorBoundary>
+);
+
 }

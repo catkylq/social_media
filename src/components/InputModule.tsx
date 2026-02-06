@@ -14,7 +14,7 @@ export default function InputModule() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
-  // URL 格式验证
+  /* ---------------- URL 校验 ---------------- */
   const validateURL = (url: string) => {
     try {
       new URL(url);
@@ -26,148 +26,102 @@ export default function InputModule() {
     }
   };
 
-  // 处理 URL 输入
   const handleURLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setUrlInput(url);
-    if (url) {
-      validateURL(url);
-    } else {
-      setUrlError('');
-    }
+    url ? validateURL(url) : setUrlError('');
   };
 
-  // 处理文件上传
+  /* ---------------- 文件上传 ---------------- */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // 检查文件类型
-      const allowedTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'text/plain'
-      ];
-      
-      if (allowedTypes.includes(file.type)) {
-        setSelectedFile(file);
-      } else {
-        alert('仅支持 PDF、Word 和 TXT 格式');
-      }
+    if (!file) return;
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('仅支持 PDF、Word、TXT 文件');
+      return;
     }
+
+    setSelectedFile(file);
   };
 
-  // 分析 URL
+  /* ---------------- URL 分析 ---------------- */
   const handleAnalyzeURL = async () => {
     if (!validateURL(urlInput)) return;
 
     setIsAnalyzing(true);
-    
-    // 模拟分析延迟
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // 生成模拟分析结果
-    const mockResult = {
+    setAnalysisResult({
       url: urlInput,
-      title: '如何用AI提升内容创作效率：实战经验分享',
-      summary: '本文详细介绍了AI工具在内容创作中的应用，包括多平台内容生成、智能优化、批量处理等功能。通过实际案例展示了如何将创作效率提升300%，同时保持内容质量。',
+      title: '如何用 AI 提升内容创作效率',
+      summary:
+        '本文介绍了 AI 在内容创作中的实际应用场景，并通过案例展示了效率提升的可能性。',
       wordCount: 2800,
       readingTime: 9,
-      keywords: ['AI工具', '内容创作', '效率提升', '自动化', '多平台'],
-      topics: ['人工智能', '内容营销', '工作效率', '自媒体运营'],
-      sentiment: 'positive' as const,
-      targetAudience: ['内容创作者', '自媒体运营者', '市场营销人员', '企业品牌方'],
-      contentType: '实战指南',
-      relevanceScore: 8.5,
-      marketingInsights: {
-        strengths: [
-          '内容实用性强，有具体的使用案例和数据支持',
-          '针对痛点明确，解决了创作者的效率问题',
-          '多平台适配的特性具有明显竞争优势'
-        ],
-        opportunities: [
-          '可以突出节省时间和成本的量化数据',
-          '强调AI辅助而非替代，降低用户顾虑',
-          '展示真实用户案例和成功故事'
-        ],
-        recommendations: [
-          '在小红书发布时，使用种草风格，强调使用体验和效果对比',
-          '知乎推广时，提供深度分析和数据支持，建立专业形象',
-          '抖音内容要简短有力，前3秒展示最吸引人的效果数据',
-          '添加限时优惠或免费试用等行动号召'
-        ]
-      },
-      platformRecommendations: [
-        {
-          platform: '小红书',
-          score: 9,
-          reason: '工具类产品在小红书有很好的种草效果，目标用户高度匹配'
-        },
-        {
-          platform: '知乎',
-          score: 8.5,
-          reason: '专业性强，适合深度内容分享，建立行业权威'
-        },
-        {
-          platform: '抖音',
-          score: 7,
-          reason: '短视频形式可以快速展示工具效果，适合吸引新用户'
-        },
-        {
-          platform: '微博',
-          score: 6.5,
-          reason: '话题传播快，适合配合热点进行推广'
-        }
-      ]
-    };
+      keywords: ['AI', '内容创作', '效率提升'],
+      sentiment: 'positive',
+    });
 
-    setAnalysisResult(mockResult);
     setIsAnalyzing(false);
   };
 
-  // 拖拽上传
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
+  /* ---------------- 拖拽 ---------------- */
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file) {
-      setSelectedFile(file);
-    }
+    if (file) setSelectedFile(file);
   };
 
   return (
-    // 外层容器：限制最大宽度 + 水平居中 + 四周留白 + 内边距
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      
-      {/* 内部内容容器：保持原有结构不变 */}
-      <div className="space-y-6">
-        {/* URL 分析结果展示 */}
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      {/* 主 AI 卡片 */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 space-y-8">
+
+        {/* 分析结果 */}
         <URLAnalysisDisplay
           isAnalyzing={isAnalyzing}
           result={analysisResult}
           onClose={() => setAnalysisResult(null)}
         />
 
-        {/* 输入方式选择 - 椭圆圆角 */}
+        {/* 输入方式切换 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
             输入方式
           </label>
-          <select
-            value={inputMode}
-            onChange={(e) => setInputMode(e.target.value as InputMode)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="text">📝 文字描述</option>
-            <option value="url">🔗 网址链接</option>
-            <option value="document">📄 文档上传</option>
-          </select>
+
+          <div className="grid grid-cols-3 bg-gray-100 rounded-full p-1">
+            {[
+              { key: 'text', label: '📝 文字' },
+              { key: 'url', label: '🔗 链接' },
+              { key: 'document', label: '📄 文档' },
+            ].map(item => (
+              <button
+                key={item.key}
+                onClick={() => setInputMode(item.key as InputMode)}
+                className={`py-2 text-sm font-medium rounded-full transition
+                  ${
+                    inputMode === item.key
+                      ? 'bg-white shadow text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* 文字输入模式 - 椭圆圆角 */}
+        {/* 文字输入 */}
         {inputMode === 'text' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -175,141 +129,118 @@ export default function InputModule() {
             </label>
             <textarea
               value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              placeholder="请描述您想要创作的内容，例如：为我们的新产品写一篇小红书帖子..."
-              className="w-full h-32 px-5 py-3 bg-white border-2 border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-400 resize-none transition-all"
+              onChange={e => setTextInput(e.target.value)}
+              placeholder="例如：为新产品生成一篇小红书推广文案"
+              className="w-full min-h-[140px] px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl
+                         focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition"
             />
-            <div className="mt-2 flex justify-between items-center text-sm">
-              <span className="text-gray-500">已输入 {textInput.length} 字</span>
+            <div className="mt-2 flex justify-between text-sm text-gray-500">
+              <span>已输入 {textInput.length} 字</span>
               {textInput.length > 500 && (
-                <span className="text-amber-600">⚠️ 建议不超过 500 字</span>
+                <span className="text-amber-600">建议不超过 500 字</span>
               )}
             </div>
           </div>
         )}
 
-        {/* URL 输入模式 - 椭圆圆角 */}
+        {/* URL 输入 */}
         {inputMode === 'url' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              网址链接
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              网页链接
             </label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={urlInput}
-                    onChange={handleURLChange}
-                    placeholder="https://example.com/article"
-                    className={`w-full px-4 py-3 border rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      urlError ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                  />
-                  {urlInput && !urlError && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <span className="text-green-500">✓</span>
-                    </div>
-                  )}
-                </div>
-                
-                <button
-                  onClick={handleAnalyzeURL}
-                  disabled={!urlInput || !!urlError || isAnalyzing}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium shadow-md hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                >
-                  {isAnalyzing ? '分析中...' : '🔍 分析'}
-                </button>
+
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <input
+                  value={urlInput}
+                  onChange={handleURLChange}
+                  placeholder="https://example.com"
+                  className={`w-full px-4 py-3 border rounded-full focus:ring-2 focus:ring-blue-500
+                    ${urlError ? 'border-red-300' : 'border-gray-300'}`}
+                />
+                {urlInput && !urlError && (
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500">
+                    ✓
+                  </span>
+                )}
               </div>
-              
-              {urlError && (
-                <p className="text-sm text-red-600">
-                  {urlError}
-                </p>
-              )}
-              
-              <p className="text-sm text-gray-500">
-                💡 支持博客文章、新闻报道、产品页面等公开网页
-              </p>
+
+              <button
+                onClick={handleAnalyzeURL}
+                disabled={!urlInput || !!urlError || isAnalyzing}
+                className="px-7 py-3 bg-gradient-to-r from-blue-600 to-purple-600
+                           text-white rounded-full font-medium shadow-sm hover:shadow-md
+                           transition disabled:opacity-50"
+              >
+                {isAnalyzing ? '分析中...' : '🔍 分析'}
+              </button>
             </div>
+
+            {urlError && <p className="mt-1 text-sm text-red-600">{urlError}</p>}
+            <p className="mt-2 text-sm text-gray-500">
+              支持博客、新闻、产品页面等公开网页
+            </p>
           </div>
         )}
 
-        {/* 文档上传模式 - 椭圆圆角 */}
+        {/* 文档上传 */}
         {inputMode === 'document' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              文档上传
+              上传文档
             </label>
-            
+
             {!selectedFile ? (
               <div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className="border-2 border-dashed border-gray-300 rounded-full p-5 text-center hover:border-blue-400 hover:bg-blue-50 transition cursor-pointer"
+                className="border-2 border-dashed border-gray-300 rounded-2xl
+                           bg-gradient-to-br from-gray-50 to-white
+                           p-6 text-center hover:border-blue-400 hover:bg-blue-50/50 transition"
               >
                 <input
                   type="file"
-                  onChange={handleFileChange}
+                  id="file-upload"
                   accept=".pdf,.doc,.docx,.txt"
                   className="hidden"
-                  id="file-upload"
+                  onChange={handleFileChange}
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
-                  <div className="flex items-center justify-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-700">
-                        点击上传或拖拽文件
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        支持 PDF、Word、TXT，最大 10MB
-                      </p>
-                    </div>
-                  </div>
+                  <p className="font-medium text-gray-700">
+                    点击上传或拖拽文件
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    PDF / Word / TXT，≤ 10MB
+                  </p>
                 </label>
               </div>
             ) : (
-              <div className="border border-gray-300 rounded-full p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg">📄</span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {selectedFile.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {(selectedFile.size / 1024).toFixed(2)} KB
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedFile(null)}
-                    className="text-gray-400 hover:text-red-500 flex-shrink-0 p-2 rounded-full hover:bg-gray-100 transition"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+              <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {(selectedFile.size / 1024).toFixed(1)} KB
+                  </p>
                 </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="text-gray-400 hover:text-red-500 transition"
+                >
+                  ✕
+                </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* AI 分析中提示 */}
+        {isAnalyzing && (
+          <div className="flex items-center justify-center gap-3 py-4 text-sm text-gray-500">
+            <span className="animate-pulse">🤖</span>
+            AI 正在分析内容，请稍候…
           </div>
         )}
       </div>

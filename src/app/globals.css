@@ -2,33 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 自定义动画 */
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
+/* ===============================
+   L1：页面背景层（最远）
+   =============================== */
+
+body {
+  background-color: #f8fafc; /* 冷静高级白 */
+  color: #0f172a;            /* 深蓝灰正文 */
+  font-feature-settings: "liga", "kern";
 }
 
-.animate-blob {
-  animation: blob 7s infinite;
+/* ===============================
+   L2：区块层（结构分区）
+   =============================== */
+
+.section {
+  background-color: #f1f5f9; /* 比 body 稍白 */
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+/* 可选：纯白区块（用于交替） */
+.section-white {
+  background-color: #ffffff;
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+/* ===============================
+   L3：卡片 / 面板层（核心内容）
+   =============================== */
+
+.card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(15, 23, 42, 0.06);
 }
+
+/* 卡片 hover（高级、克制） */
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.08),
+    0 16px 40px rgba(15, 23, 42, 0.12);
+}
+
+/* ===============================
+   细节增强（但不抢戏）
+   =============================== */
 
 /* 平滑滚动 */
 html {
@@ -41,76 +64,19 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #eef2f7;
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(to bottom, #3b82f6, #9333ea);
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #2563eb, #7e22ce);
 }
 
-/* 按钮悬停效果 */
-button {
-  transition: all 0.2s ease-in-out;
-}
-
-/* 输入框焦点样式 */
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-}
-
-/* 卡片悬停效果 */
-.card-hover {
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* 隐藏滚动条但保持滚动功能 */
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
-}
-
-/* 无障碍 - 仅屏幕阅读器可见 */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-.sr-only:focus,
-.sr-only:active {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: inherit;
-  margin: inherit;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
-
-/* 焦点可见性增强 */
+/* 焦点可见性（无障碍） */
 *:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
@@ -121,20 +87,7 @@ select:focus {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* 打印样式优化 */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-  
-  body {
-    background: white;
+    animation: none !important;
+    transition: none !important;
   }
 }
