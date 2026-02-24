@@ -1,21 +1,70 @@
+// 'use client';
+
+// import { useState } from 'react';
+
+// type Platform = '小红书' | '抖音' | '微博' | '知乎';
+
+// interface ConfigPanelProps {
+//   platform: Platform;
+//   onPlatformChange: (platform: Platform) => void;
+// }
+
+// export default function ConfigPanel({ platform, onPlatformChange }: ConfigPanelProps) {
+//   const [tone, setTone] = useState('专业 Professional');
+//   const [wordLimit, setWordLimit] = useState(300);
+//   const [generateCount, setGenerateCount] = useState(3);
+//   const [useHashtags, setUseHashtags] = useState(true);
+//   const [useEmojis, setUseEmojis] = useState(true);
+//   const [showAdvanced, setShowAdvanced] = useState(false);
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type Platform = '小红书' | '抖音' | '微博' | '知乎';
 
 interface ConfigPanelProps {
   platform: Platform;
   onPlatformChange: (platform: Platform) => void;
+
+  // ✅ 新增：向父组件同步参数
+  onConfigChange?: (config: {
+    tone: string;
+    wordLimit: number;
+    generateCount: number;
+    useHashtags: boolean;
+    useEmojis: boolean;
+  }) => void;
 }
 
-export default function ConfigPanel({ platform, onPlatformChange }: ConfigPanelProps) {
+export default function ConfigPanel({
+  platform,
+  onPlatformChange,
+  onConfigChange,
+}: ConfigPanelProps) {
   const [tone, setTone] = useState('专业 Professional');
   const [wordLimit, setWordLimit] = useState(300);
   const [generateCount, setGenerateCount] = useState(3);
   const [useHashtags, setUseHashtags] = useState(true);
   const [useEmojis, setUseEmojis] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // ✅ 新增：当配置变化时通知父组件
+  useEffect(() => {
+    if (onConfigChange) {
+      onConfigChange({
+        tone,
+        wordLimit,
+        generateCount,
+        useHashtags,
+        useEmojis,
+      });
+    }
+  }, [tone, wordLimit, generateCount, useHashtags, useEmojis]);
+
+
+
+
 
   // 平台特定配置
   const platformConfig = {

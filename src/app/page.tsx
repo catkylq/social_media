@@ -46,7 +46,7 @@ export default function Home() {
           {/* 区块标题 */}
           <div className="text-center mb-20">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-full">
-              🤖 AI 工作区
+             {/* AI 工作区 */}
             </span>
             <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-4">
               内容生成工作台
