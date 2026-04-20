@@ -12,17 +12,25 @@ interface Message {
 interface FeedbackPanelProps {
   contentId: number;
   originalContent: string;
-  onOptimize: (feedback: string) => void;
+  platform?: string;
+  tone?: string;
+  wordLimit?: number;
+  onOptimize: (optimizedContent: string) => void;
 }
 
-export default function FeedbackPanel({ 
-  contentId, 
+export default function FeedbackPanel({
+  contentId,
   originalContent,
-  onOptimize 
+  platform = '小红书',
+  tone = '专业',
+  wordLimit = 300,
+  onOptimize
 }: FeedbackPanelProps) {
   const [feedback, setFeedback] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const [conversationHistory, setConversationHistory] = useState<Message[]>([
     {
       id: 1,
@@ -32,7 +40,6 @@ export default function FeedbackPanel({
     }
   ]);
 
-  // 快捷建议
   const quickSuggestions = [
     '让语气更友好一些',
     '增加一些数据支持',
@@ -46,8 +53,8 @@ export default function FeedbackPanel({
     if (!feedback.trim()) return;
 
     setIsOptimizing(true);
+    setError(null);
 
-    // 添加用户消息
     const userMessage: Message = {
       id: Date.now(),
       role: 'user',
@@ -55,43 +62,50 @@ export default function FeedbackPanel({
       timestamp: new Date()
     };
 
-    setConversationHistory([...conversationHistory, userMessage]);
+    setConversationHistory(prev => [...prev, userMessage]);
 
-    // 模拟 AI 优化
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch('/api/optimize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          originalContent,
+          userFeedback: feedback,
+          platform,
+          tone,
+          wordLimit,
+          conversationHistory: conversationHistory.slice(1).map(msg => ({
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content
+          }))
+        }),
+      });
 
-    // 添加 AI 回复（模拟优化后的内容）
-    const aiMessage: Message = {
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: generateOptimizedContent(originalContent, feedback),
-      timestamp: new Date()
-    };
+      const data = await response.json();
 
-    setConversationHistory([...conversationHistory, userMessage, aiMessage]);
-    setFeedback('');
-    setIsOptimizing(false);
-    setShowHistory(true);
+      if (!response.ok) {
+        throw new Error(data.error || '优化失败');
+      }
 
-    // 通知父组件
-    onOptimize(feedback);
-  };
+      const aiMessage: Message = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: data.optimizedContent,
+        timestamp: new Date()
+      };
 
-  // 生成优化后的内容（模拟）
-  const generateOptimizedContent = (original: string, userFeedback: string) => {
-    // 根据反馈类型返回不同的优化版本
-    if (userFeedback.includes('友好') || userFeedback.includes('轻松')) {
-      return original + '\n\n😊 希望这个分享对你有帮助！有问题随时来问我～';
-    } else if (userFeedback.includes('数据') || userFeedback.includes('支持')) {
-      return original + '\n\n📊 根据调查数据显示，使用AI工具的创作者效率平均提升了300%，内容互动率提高了35%。';
-    } else if (userFeedback.includes('emoji') || userFeedback.includes('表情')) {
-      return original.split('\n').map(line => 
-        line ? '✨ ' + line : line
-      ).join('\n');
-    } else if (userFeedback.includes('缩短') || userFeedback.includes('简短')) {
-      return '🔥 发现超实用AI工具！\n\n多平台支持，20+语气可选，一键生成多版本。\n\n效率提升300%，强烈推荐！💯';
-    } else {
-      return original + '\n\n💡 已根据您的建议进行优化调整。';
+      setConversationHistory(prev => [...prev, aiMessage]);
+      setFeedback('');
+      setShowHistory(true);
+      onOptimize(data.optimizedContent);
+
+    } catch (err: any) {
+      setError(err.message || '优化过程中出现错误，请稍后重试');
+      setConversationHistory(prev => prev.filter(msg => msg.id !== userMessage.id));
+    } finally {
+      setIsOptimizing(false);
     }
   };
 
@@ -99,10 +113,19 @@ export default function FeedbackPanel({
     setFeedback(suggestion);
   };
 
+  const handleCopy = async (content: string, messageId: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedId(messageId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('复制失败:', err);
+    }
+  };
+
   return (
     <div className="border-t border-gray-200 bg-gradient-to-b from-white to-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* 标题区域 */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -112,7 +135,7 @@ export default function FeedbackPanel({
               AI 协同优化
             </h3>
           </div>
-          
+
           {conversationHistory.length > 1 && (
             <button
               onClick={() => setShowHistory(!showHistory)}
@@ -123,7 +146,6 @@ export default function FeedbackPanel({
           )}
         </div>
 
-        {/* 对话历史 */}
         {showHistory && conversationHistory.length > 1 && (
           <div className="mb-4 max-h-96 overflow-y-auto space-y-3 bg-white rounded-lg border border-gray-200 p-4">
             {conversationHistory.map((message, index) => (
@@ -152,13 +174,22 @@ export default function FeedbackPanel({
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
                     {message.content}
                   </div>
-                  
-                  {/* 版本对比标记 */}
+
                   {index > 0 && message.role === 'assistant' && (
-                    <div className="mt-2 pt-2 border-t border-gray-300/30">
+                    <div className="mt-2 pt-2 border-t border-gray-300/30 flex items-center justify-between">
                       <span className="text-xs opacity-75">
                         📝 版本 {Math.floor(index / 2) + 1}
                       </span>
+                      <button
+                        onClick={() => handleCopy(message.content, message.id)}
+                        className={`text-xs px-2 py-1 rounded transition ${
+                          copiedId === message.id
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                      >
+                        {copiedId === message.id ? '✓ 已复制' : '📋 复制'}
+                      </button>
                     </div>
                   )}
                 </div>
@@ -167,7 +198,18 @@ export default function FeedbackPanel({
           </div>
         )}
 
-        {/* 快捷建议 */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <span className="text-red-500 mr-2">⚠️</span>
+              <div>
+                <p className="text-sm text-red-700 font-medium">优化失败</p>
+                <p className="text-sm text-red-600 mt-1">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             💡 快捷建议
@@ -186,7 +228,6 @@ export default function FeedbackPanel({
           </div>
         </div>
 
-        {/* 反馈输入框 */}
         <div className="space-y-3">
           <label className="block text-sm font-medium text-gray-700">
             告诉 AI 如何改进
@@ -204,7 +245,6 @@ export default function FeedbackPanel({
             </div>
           </div>
 
-          {/* 操作按钮 */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleOptimize}
@@ -214,7 +254,7 @@ export default function FeedbackPanel({
               {isOptimizing ? (
                 <>
                   <span className="inline-block animate-spin mr-2">⏳</span>
-                  优化中...
+                  AI 优化中...
                 </>
               ) : (
                 <>
@@ -230,6 +270,7 @@ export default function FeedbackPanel({
                   setConversationHistory([conversationHistory[0]]);
                   setFeedback('');
                   setShowHistory(false);
+                  setError(null);
                 }}
                 className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
               >
@@ -239,7 +280,6 @@ export default function FeedbackPanel({
           </div>
         </div>
 
-        {/* 提示信息 */}
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800">
             💡 <strong>提示：</strong>
@@ -247,7 +287,6 @@ export default function FeedbackPanel({
           </p>
         </div>
 
-        {/* 优化统计 */}
         {conversationHistory.length > 1 && (
           <div className="mt-4 flex items-center justify-center gap-6 text-sm text-gray-600">
             <div>

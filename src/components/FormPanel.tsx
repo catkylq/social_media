@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import URLAnalysisDisplay from './URLAnalysisDisplay';
 
 // ─── Toggle 组件 ──────────────────────────────────────────
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -21,7 +20,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 }
 
 // ─── 原 InputModule 类型 ──────────────────────────────────
-type InputMode = 'text' | 'url' | 'document';
+type InputMode = 'text' | 'document';
 
 // ─── 原 ConfigPanel 类型 ──────────────────────────────────
 type Platform = '小红书' | '抖音' | '微博' | '知乎';
@@ -31,12 +30,8 @@ type FormPanelProps = {
   // InputModule props
   textInput: string;
   onTextChange: React.Dispatch<React.SetStateAction<string>>;
-  urlInput: string;
-  onURLChange: React.Dispatch<React.SetStateAction<string>>;
   selectedFile: File | null;
   onFileChange: React.Dispatch<React.SetStateAction<File | null>>;
-  isAnalyzing: boolean;
-  onAnalyzeURL: () => Promise<void>;
   onModeChange?: (mode: InputMode) => void;
 
   // ConfigPanel props
@@ -59,12 +54,8 @@ export default function FormPanel({
   // InputModule props
   textInput,
   onTextChange,
-  urlInput,
-  onURLChange,
   selectedFile,
   onFileChange,
-  isAnalyzing,
-  onAnalyzeURL,
   onModeChange,
   // ConfigPanel props
   platform,
@@ -74,12 +65,6 @@ export default function FormPanel({
 
   // ─── 原 InputModule state ─────────────────────────────
   const [inputMode, setInputMode] = useState<InputMode>('text');
-  const [urlError, setUrlError] = useState('');
-
-  const validateURL = (url: string) => {
-    try { new URL(url); setUrlError(''); return true; }
-    catch { setUrlError('请输入有效 URL'); return false; }
-  };
 
   const handleModeChange = (mode: InputMode) => {
     setInputMode(mode);
@@ -126,18 +111,18 @@ export default function FormPanel({
       <div className="space-y-8">
 
         {/* 输入方式切换 */}
-        <div className="grid grid-cols-3 bg-pink-50 rounded-2xl p-2">
-          {['text','url','document'].map(mode => (
+        <div className="grid grid-cols-2 bg-gray-50 rounded-2xl p-2">
+          {['text','document'].map(mode => (
             <button
               key={mode}
               onClick={() => handleModeChange(mode as InputMode)}
               className={`py-3 text-base font-medium rounded-xl transition-all duration-200 ${
                 inputMode === mode
-                  ? 'bg-white shadow-md text-pink-600'
-                  : 'text-gray-500 hover:text-pink-500'
+                  ? 'bg-white shadow-md text-gray-800'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              {mode==='text'?'📝 文字输入':mode==='url'?'🔗 链接解析':'📄 文档上传'}
+              {mode==='text'?'文字输入':'文档上传'}
             </button>
           ))}
         </div>
@@ -148,59 +133,35 @@ export default function FormPanel({
             value={textInput}
             onChange={e=>onTextChange(e.target.value)}
             placeholder="例如：为新产品生成一篇小红书种草文案，语气活泼一点..."
-            className="w-full min-h-[200px] px-6 py-5 text-lg bg-pink-50 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-400 resize-none transition"
+            className="w-full min-h-[200px] px-6 py-5 text-lg bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 resize-none transition"
           />
-        )}
-
-        {/* URL 输入 */}
-        {inputMode==='url' && (
-          <div className="flex gap-4">
-            <input
-              value={urlInput}
-              onChange={e=>{
-                onURLChange(e.target.value);
-                urlError && validateURL(e.target.value);
-              }}
-              placeholder="https://example.com"
-              className={`flex-1 px-6 py-4 text-base rounded-2xl border ${
-                urlError?'border-red-300':'border-pink-200'
-              } focus:ring-2 focus:ring-pink-400`}
-            />
-            <button
-              disabled={!urlInput || !!urlError || isAnalyzing}
-              onClick={onAnalyzeURL}
-              className="px-8 py-4 text-base font-medium bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-2xl shadow-md hover:shadow-lg transition disabled:opacity-50"
-            >
-              {isAnalyzing?'分析中...':'🔍 开始分析'}
-            </button>
-          </div>
         )}
 
         {/* 文档上传 */}
         {inputMode==='document' && (
           <div>
             {!selectedFile ? (
-              <label className="block p-10 border-2 border-dashed border-pink-200 rounded-3xl cursor-pointer text-center bg-pink-50 hover:bg-pink-100 transition">
+              <label className="block p-10 border-2 border-dashed border-gray-200 rounded-3xl cursor-pointer text-center bg-gray-50 hover:bg-gray-100 transition">
                 <input
                   type="file"
                   className="hidden"
                   onChange={e=>onFileChange(e.target.files?.[0]??null)}
                 />
-                <div className="text-lg font-medium text-pink-600">
-                  📂 点击上传或拖拽文件
+                <div className="text-lg font-medium text-gray-700">
+                  📂 点击上传
                 </div>
                 <div className="text-sm text-gray-500 mt-2">
-                  支持 PDF / Word / TXT
+                  支持 Word / TXT
                 </div>
               </label>
             ) : (
-              <div className="flex justify-between items-center p-5 border border-pink-200 rounded-2xl bg-pink-50">
+              <div className="flex justify-between items-center p-5 border border-gray-200 rounded-2xl bg-gray-50">
                 <div className="text-base">
                   {selectedFile.name} ({(selectedFile.size/1024).toFixed(1)} KB)
                 </div>
                 <button
                   onClick={()=>onFileChange(null)}
-                  className="text-pink-500 hover:text-pink-700 text-lg"
+                  className="text-gray-500 hover:text-gray-700 text-lg"
                 >
                   ✕
                 </button>
@@ -227,7 +188,7 @@ export default function FormPanel({
               <option>微博</option>
               <option>知乎</option>
             </select>
-            <p className="mt-2 text-xs text-gray-400">💡 {config.tips}</p>
+            <p className="mt-2 text-xs text-gray-400">{config.tips}</p>
           </div>
 
           <div>
@@ -306,7 +267,7 @@ export default function FormPanel({
           </select>
         </div>
 
-        {/* 开关行 — 与截图一致：标签在左，toggle在右，横排 */}
+        {/* 开关行 */}
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-700">添加话题标签</span>

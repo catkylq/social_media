@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FeedbackPanel from './FeedbackPanel';
 
 interface GeneratedContent {
@@ -8,7 +8,7 @@ interface GeneratedContent {
   content: string;
   platform: string;
   createdAt: Date;
-  score?: number;  // 后端可能返回的评分（0-100）
+  score?: number;
 }
 
 interface ResultDisplayProps {
@@ -16,17 +16,39 @@ interface ResultDisplayProps {
   results?: GeneratedContent[];
   onRegenerate?: (id: number) => void;
   onEdit?: (id: number) => void;
+  onResultsUpdate?: (updatedResults: GeneratedContent[]) => void;
+  regenerateParams?: {
+    inputText?: string;
+    platform: string;
+    tone: string;
+    wordLimit: number;
+    useHashtags: boolean;
+    useEmojis: boolean;
+    creativity: '保守' | '平衡' | '创新';
+    targetAudience: string;
+    mustInclude: string;
+    mustExclude: string;
+  };
 }
 
-export default function ResultDisplay({ 
-  isLoading = false, 
+export default function ResultDisplay({
+  isLoading = false,
   results = [],
   onRegenerate,
-  onEdit
+  onEdit,
+  onResultsUpdate,
+  regenerateParams
 }: ResultDisplayProps) {
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [feedbackOpenId, setFeedbackOpenId] = useState<number | null>(null);
+  const [regeneratingId, setRegeneratingId] = useState<number | null>(null);
+  const [localResults, setLocalResults] = useState(results);
+
+  // 当外部 results 变化时同步到本地
+  useEffect(() => {
+    setLocalResults(results);
+  }, [results]);
 
   // 复制到剪贴板
   const handleCopy = async (content: string, id: number) => {
@@ -36,6 +58,67 @@ export default function ResultDisplay({
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
       alert('复制失败，请手动复制');
+    }
+  };
+
+  // 重新生成单个结果
+  const handleRegenerate = async (id: number) => {
+    if (!regenerateParams?.inputText) {
+      alert('缺少原始输入，无法重新生成');
+      return;
+    }
+
+    setRegeneratingId(id);
+
+    try {
+      const response = await fetch('/api/agent-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'run',
+          inputText: regenerateParams.inputText,
+          platform: regenerateParams.platform,
+          tone: regenerateParams.tone,
+          wordLimit: regenerateParams.wordLimit,
+          useHashtags: regenerateParams.useHashtags,
+          useEmojis: regenerateParams.useEmojis,
+          targetAudience: regenerateParams.targetAudience,
+          mustInclude: regenerateParams.mustInclude,
+          mustExclude: regenerateParams.mustExclude,
+          creativity: regenerateParams.creativity,
+          maxIterations: 2,
+          targetScore: 85,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const data = await response.json();
+      const newResult = (data.results || [])[0];
+
+      if (newResult) {
+        const updatedContent: GeneratedContent = {
+          id: Date.now(),
+          content: newResult.content,
+          platform: newResult.platform,
+          createdAt: new Date(newResult.createdAt),
+          score: newResult.score,
+        };
+
+        // 更新结果列表
+        const updatedResults = results.map(r =>
+          r.id === id ? updatedContent : r
+        );
+        onResultsUpdate?.(updatedResults);
+        onRegenerate?.(id);
+      }
+    } catch (err) {
+      console.error('重新生成失败:', err);
+      alert('重新生成失败，请稍后重试');
+    } finally {
+      setRegeneratingId(null);
     }
   };
 
@@ -100,7 +183,7 @@ export default function ResultDisplay({
         {/* 结果统计 */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            生成结果 ({results.length} 个版本)
+            生成结果 ({localResults.length} 个版本)
           </h3>
           <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
             导出全部
@@ -108,7 +191,7 @@ export default function ResultDisplay({
         </div>
 
         {/* 结果卡片列表 */}
-        {results.map((result, index) => {
+        {localResults.map((result, index) => {
           const score = result.score;
           const starCount = getStarCount(score);
           const formattedScore = formatScore(score);
@@ -185,7 +268,7 @@ export default function ResultDisplay({
                       </>
                     ) : (
                       <>
-                        <span className="inline-block mr-1">📋</span>
+                        <span className="inline-block mr-1"></span>
                         复制内容
                       </>
                     )}
@@ -201,18 +284,28 @@ export default function ResultDisplay({
                     }`}
                   >
                     <span className="inline-block mr-1">
-                      {feedbackOpenId === result.id ? '✓' : '✏️'}
+                      {/* {feedbackOpenId === result.id ? '✓' : '✏️'} */}
                     </span>
                     {feedbackOpenId === result.id ? '关闭优化' : '编辑优化'}
                   </button>
 
                   {/* 重新生成按钮 */}
                   <button
-                    onClick={() => onRegenerate?.(result.id)}
-                    className="flex-1 py-2 px-4 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200 transition"
+                    onClick={() => handleRegenerate(result.id)}
+                    disabled={regeneratingId === result.id || !regenerateParams?.inputText}
+                    className="flex-1 py-2 px-4 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <span className="inline-block mr-1">🔄</span>
-                    重新生成
+                    {regeneratingId === result.id ? (
+                      <>
+                        <span className="inline-block animate-spin mr-2">⏳</span>
+                        生成中...
+                      </>
+                    ) : (
+                      <>
+                        <span className="inline-block mr-1"></span>
+                        重新生成
+                      </>
+                    )}
                   </button>
 
                   {/* 更多操作 */}
@@ -253,9 +346,9 @@ export default function ResultDisplay({
                 <FeedbackPanel
                   contentId={result.id}
                   originalContent={result.content}
-                  onOptimize={(feedback) => {
-                    console.log('优化反馈:', feedback);
-                    // TODO: 实现优化逻辑
+                  platform={result.platform}
+                  onOptimize={(optimizedContent) => {
+                    console.log('优化后的内容:', optimizedContent);
                   }}
                 />
               )}

@@ -10,13 +10,15 @@ export const metadata: Metadata = {
   keywords: "AI内容生成,Agentic,社交媒体,内容创作,小红书,抖音,微博,知乎",
   authors: [{ name: "AI Creator Team" }],
   themeColor: "#7c3aed",
+  icons: {
+    icon: '/favicon.svg',      // 新增此行
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN">
       <body className={notoSans.className}>
-
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-50 px-4 py-2 bg-purple-600 text-white rounded-lg"
@@ -28,7 +30,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <nav className="fixed top-0 w-full bg-white/5 backdrop-blur-xl border-b border-white/10 z-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between h-16">
-
               <a href="/" className="flex items-center gap-3 group">
                 <div className="w-9 h-9 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-sm group-hover:bg-white/30 transition-all">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,18 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </a>
 
               <div className="hidden md:flex items-center gap-1">
-                <a href="#features" className="nav-link">功能</a>
-                <a href="#generator" className="nav-link">开始创作</a>
-                <a href="#pricing" className="nav-link">定价</a>
-                <div className="ml-4">
-                  <a
-                    href="#generator"
-                    className="px-5 py-2 bg-white text-purple-700 hover:bg-purple-50 rounded-lg
-                               shadow-sm font-medium text-sm transition"
-                  >
-                    免费试用
-                  </a>
-                </div>
+                {/* 只保留“历史”链接 */}
+                <a href="/history" className="nav-link">历史</a>
               </div>
 
               <button className="md:hidden p-2 rounded-lg hover:bg-white/10 transition" aria-label="打开菜单">
@@ -106,7 +97,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </footer>
-
       </body>
     </html>
   );
