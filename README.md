@@ -138,6 +138,3 @@ src/
 - 代码遵循 ESLint 规范
 - 组件采用函数式 + Hooks 风格
 
-## License
-
-MIT
